@@ -1,11 +1,16 @@
 from selenium import webdriver
 import time
 import grabimage as gi
+import numpy as np
+import EnviromentAgar as EA
+import random
 
-TOP_BAR = 80
-WIDTH = 580
-HIDTH = 320 + TOP_BAR
-MONITOR = {'top': 250, 'left': 0, 'width': WIDTH*2, 'height': int(HIDTH*1.6)}
+
+
+TOP_BAR = 74
+BROWSER_WIDTH = 580
+BROWSER_HIGHT = 580 + TOP_BAR
+SCREENSHOT_MONITOR = {'top': 250, 'left': 0, 'width': BROWSER_WIDTH*2, 'height': (BROWSER_HIGHT - TOP_BAR)*2}
 
 SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
                 "unset": ["showNames", "showColor", "showMass",
@@ -13,59 +18,33 @@ SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
                         "fillSkin", "backgroundSectors", "jellyPhysics", "playSounds"]}
 
 
-def main():
-    browser = webdriver.Firefox()
-    browser.set_window_size(WIDTH, HIDTH)
-    browser.set_window_position(0, 0)
-    browser.get("http://localhost:3000")
+DECAY_RATE = 0.99
+BUFFER_SIZE = 40000
+MINIBATCH_SIZE = 64
+TOT_FRAME = 3000000
+EPSILON_DECAY = 1000000
+MIN_OBSERVATION = 5000
+FINAL_EPSILON = 0.05
+INITIAL_EPSILON = 0.1
+NUM_ACTIONS = 6
+TAU = 1000
+# Number of frames to throw into network
+NUM_FRAMES = 3
 
-    time.sleep(1)
-    
-    nick = 0
-
-    while not nick:
-        try:
-            nick = browser.find_element_by_id("nick")
-            nick.send_keys("DQN")
-            skin = browser.find_element_by_id("skin")
-            skin.send_keys("doge")
-
-
-            #
-            nick.click()
-            skin.click()
-
-            for s in SETTINGS_NAME["set"]:
-                elem = browser.find_element_by_id(s)
-                print(s," ", elem.is_selected())
-                if not elem.is_selected():
-                    elem.click()
-            print("###############")
-            for s in SETTINGS_NAME["unset"]:
-                elem = browser.find_element_by_id(s)
-                print(s," ", elem.is_selected())
-                if elem.is_selected():
-                    elem.click()
-
-            time.sleep(1)
-
-            element = browser.find_element_by_id("play-btn")
-            element.click()
-
-        except:
-            continue
-
-    grabber = gi.ScreenShot(MONITOR)
-    score = browser.find_element_by_id("dqnScore")
-
-    #for image in grabber.edited_images(MONITOR["width"]//2,MONITOR["height"]//2):
-    for image in grabber.edited_images(110,84):
-        print("Score: ", score.get_attribute("value"), end='\r')
-        gi.ScreenShot.show(image)
-
-    
-    time.sleep(2)
-    browser.close()
 
 if __name__ == "__main__":
-    main()
+    a = EA.EnviromentAgar(580,580, botsNumber=50)
+    first = a.reset()
+    #gi.ScreenShot.show(first)
+    last = None
+    while True:
+        im, score= a.step(random.randint(0,8))
+        if im is None:
+            time.sleep(2)
+            a.reset()
+            time.sleep(2)
+        print(score)
+        time.sleep(0.01)
+    print(a.isDead())
+    input()
+    a.close()
