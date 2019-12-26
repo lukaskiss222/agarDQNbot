@@ -34,7 +34,7 @@ class EnviromentAgar(object):
         os.chdir(os.path.join(os.path.abspath(sys.path[0]), "./Cigar2"))
         self.cigar = subprocess.Popen(["node", "webserver.js"], stdin=None, stdout=None)
         os.chdir(self.origWD)
-
+        
         self.browser = webdriver.Firefox()
         self.browser.set_window_size(WINDOW_WIDTH, WINDOW_HIGHT + TOP_BAR)
         self.browser.set_window_position(0, 0)
@@ -55,18 +55,21 @@ class EnviromentAgar(object):
 
         self.dead_box = self.browser.find_element_by_id("overlays")
         self.play_btn = self.browser.find_element_by_id("play-btn")
-
+        
 
 
 
         self._initialSetup()
-
+        
         self.setMoveType(False)
 
-        self._setAction(4)
-        if botsNumber > 0:
-            self._addBot(botsNumber)
+        self._setAction(1)
+        self._addBot(botsNumber)
+
+        
         self.setDiscretize()
+
+        
 
 
 
@@ -153,8 +156,8 @@ class EnviromentAgar(object):
         image = next(self.images_generator)
         terminal = self.isDead()
         if terminal:
-            return None, score
-        return image, score
+            return None, score, terminal
+        return image, score, terminal
 
     def _addBot(self, count):
         self._sendCommand("addbot 1 {}".format(count))
@@ -163,6 +166,7 @@ class EnviromentAgar(object):
     def _sendCommand(self, command):
         self.ogar.stdin.write(command + '\n')
         self.ogar.stdin.flush()
+        time.sleep(0.005) #Time to reponse to command
 
 
     def close(self):
@@ -172,3 +176,6 @@ class EnviromentAgar(object):
         self.cigar.terminate()
 
         self.browser.close()
+
+if __name__ == "__main__":
+    a = EnviromentAgar(580,580)
