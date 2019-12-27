@@ -42,12 +42,11 @@ class SimpleRewards(AbstractRewards):
 class CombinedRewards(AbstractRewards):
 
 
-    def __init__(self, MAX_FRAMES, MAX_SCORE, initial_score, p = 0.7):
+    def __init__(self, MAX_FRAMES, MAX_SCORE, p = 0.7, scale = 2):
         super().__init__(MAX_FRAMES, MAX_SCORE)
-        self.initial_score = initial_score
-        self.last_score = initial_score
         self.count_calls = 0
         self.p = p
+        self.scale = scale
 
 
     def calculateReward(self, score, done):
@@ -63,14 +62,14 @@ class CombinedRewards(AbstractRewards):
                 return 100
             return -10
         
-        reward = (1-p)*(self.count_calls/self.MAX_FRAMES) + p*(np.abs(score - self.last_score) -1)
+        reward = (1-self.p)*(self.count_calls/self.MAX_FRAMES) + self.p*(np.abs(score - self.last_score) -1)*self.scale
         self.last_score = score
         return reward
 
-    def reset(self):
-        self.last_score = self.initial_score
+    def reset(self, score):
+        self.last_score = score
         self.count_calls = 0
 
     def calculateTotalReward(self):
-        return (1-p)*(self.count_calls/self.MAX_FRAMES) + p*self.last_score
+        return (1-self.p)*(self.count_calls/self.MAX_FRAMES) + self.p*self.last_score
         

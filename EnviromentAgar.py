@@ -7,6 +7,7 @@ import grabimage as gi
 import numpy as np
 import os
 import socket
+import cv2
 
 
 TOP_BAR = 74
@@ -151,7 +152,10 @@ class EnviromentAgar(object):
         self._sendCommand("killall 1")
         if self.isDead():
             self.play_btn.click()
-        return next(self.images_generator)
+        self._sendCommand("next_step")
+        time.sleep(0.3)
+        img = next(self.images_generator)
+        return img
 
     def step(self, action):
         self._setAction(action)
@@ -182,7 +186,7 @@ class EnviromentAgar(object):
         if recv != b"OK\r\n":
             print("!!!, Error in response")
             raise ConnectionError()
-        time.sleep(0.005)
+        time.sleep(0.02)
 
     def _connectToOgar(self, port, count = 3):
         c = 0

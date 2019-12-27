@@ -4,13 +4,19 @@ from tensorflow.keras import Sequential
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
-from collections import deque
 import numpy as np
-import random
+import random, os, sys
+
+from collections import deque
+
+
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "per/")
+from per.prioritized_memory import Memory 
+
 
 class DeepQModel(object):
     """Constructs the desired deep q learning network"""
-    def __init__(self, num_actions, num_frames, TAU=10, lr=0.0001,):
+    def __init__(self, num_actions, num_frames, TAU=100, lr=0.0025, intEpsilon = 0.2):
         
         self.num_actions = num_actions
         self.num_frames = num_frames
@@ -18,18 +24,19 @@ class DeepQModel(object):
         self.counter_TAU = 0
         self.lr = lr
 
-        self.EPSILON_DECAY = 1000000
+        self.EPSILON_DECAY = 100000
         self.FINAL_EPSILON = 0.05
-        self.INITIAL_EPSILON = 0.1
-        self.epsilon = 0.1
+        self.INITIAL_EPSILON = intEpsilon
+        self.epsilon = intEpsilon
         self.gamma = 0.99
 
         self.MEMORY_SIZE = 40000
         self.MINIBATCH_SIZE = 32
 
-        self.memory = deque(maxlen=self.MEMORY_SIZE)
+        #self.memory = deque(maxlen=self.MEMORY_SIZE)
+        self.memory = Memory(self.MEMORY_SIZE)
 
-
+        self.optimizer = keras.optimizers.Adam(lr = self.lr)
         self.model = self.construct_q_network()
         self.target_model = self.construct_q_network()
         self.target_train()
@@ -49,13 +56,14 @@ class DeepQModel(object):
         model.add(layers.Dense(512))
         model.add(layers.Activation('relu'))
         model.add(layers.Dense(self.num_actions))
-        model.compile(loss='mse', optimizer=Adam(lr=self.lr))
+        #model.compile(loss='mse', optimizer=Adam(lr=self.lr))
 
         return model
 
     def replay(self):
 
-        minibatch = random.sample(self.memory, self.MINIBATCH_SIZE)
+        #minibatch = random.sample(self.memory, self.MINIBATCH_SIZE)
+        minibatch, idxs, is_weights = self.memory.sample(self.MINIBATCH_SIZE)
         states = np.array([val[0] for val in minibatch ])
         actions = np.array([val[1] for val in minibatch ])
         rewards = np.array([val[2] for val in minibatch ])
@@ -67,18 +75,45 @@ class DeepQModel(object):
 
         for i in range(len(dones)):
             if dones[i]:
-                t[actions[i]] = rewards[i]
+                t[i][actions[i]] = rewards[i]
             else:
-                t[actions[i]] = rewards[i] + self.gamma*np.max(t[i])
+                t[i][actions[i]] = rewards[i] + self.gamma*np.max(t[i])
 
 
-        loss = self.model.train_on_batch(states, t)
+        #loss = self.model.train_on_batch(states, t, sample_weight = is_weight)
+        absolute_error = None
+        loss_value = None
+
+        with tf.GradientTape() as tape:
+            one_hot_actions = tf.one_hot(actions, self.num_actions)
+            logits = self.model(states)
+            Q_log = tf.math.reduce_sum(tf.math.multiply(one_hot_actions, logits),axis=1)
+            Q_t = tf.math.reduce_sum(tf.math.multiply(one_hot_actions, t),axis=1)
+            diff = tf.math.subtract(Q_log,Q_t)
+
+            absolute_error = keras.backend.abs(diff)
+            
+
+            loss_value = tf.math.reduce_mean(is_weights * tf.math.squared_difference(Q_log, Q_t))
+            #loss_value = keras.losses.mse(t,logits)
+            grads = tape.gradient(loss_value, self.model.trainable_weights)
+            self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
+
+        for i, idx in enumerate(idxs):
+            self.memory.update(idx,absolute_error[i])
+
+
+
         self.epislon_decay()
+        return loss_value
         
 
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def remember(self, sample):
+        error = np.max(self.memory.tree.tree[-self.memory.tree.capacity:])
+        if error == 0:
+            error = 1
+        self.memory.add(error, sample)
 
 
     def epislon_decay(self):
