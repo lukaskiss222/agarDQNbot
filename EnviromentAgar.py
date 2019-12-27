@@ -6,6 +6,7 @@ import time
 import grabimage as gi
 import numpy as np
 import os
+import socket
 
 
 TOP_BAR = 74
@@ -17,8 +18,8 @@ SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
 
 class EnviromentAgar(object):
 
-    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, botsNumber = 0):
-        
+    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, botsNumber = 0, PORT=2998):
+        f = open("Ogar_o.txt","w")
         self.discretized = False
         self.SCREENSHOT_MONITOR = {'top': 250, 'left': 0, 'width': WINDOW_WIDTH*2, 'height': WINDOW_HIGHT*2}
         self.WINDOW_WIDTH = WINDOW_WIDTH
@@ -27,13 +28,16 @@ class EnviromentAgar(object):
         self.origWD = os.getcwd()
         
         os.chdir(os.path.join(os.path.abspath(sys.path[0]), "./OgarII/cli"))
-        self.ogar = subprocess.Popen(["node", "index.js"],stdin=subprocess.PIPE,
-    stdout=subprocess.PIPE, encoding='utf8')
+        self.run_ogar = subprocess.Popen(["node", "index.js"],stdin=subprocess.DEVNULL,
+    stdout=f, encoding='utf8')
         os.chdir(self.origWD)
 
         os.chdir(os.path.join(os.path.abspath(sys.path[0]), "./Cigar2"))
-        self.cigar = subprocess.Popen(["node", "webserver.js"], stdin=None, stdout=None)
+        self.run_cigar = subprocess.Popen(["node", "webserver.js"], stdin=subprocess.DEVNULL,
+         stdout=subprocess.DEVNULL)
         os.chdir(self.origWD)
+
+        self._connectToOgar(PORT)
         
         self.browser = webdriver.Firefox()
         self.browser.set_window_size(WINDOW_WIDTH, WINDOW_HIGHT + TOP_BAR)
@@ -164,16 +168,47 @@ class EnviromentAgar(object):
 
     
     def _sendCommand(self, command):
-        self.ogar.stdin.write(command + '\n')
-        self.ogar.stdin.flush()
-        time.sleep(0.005) #Time to reponse to command
+        command = command.encode()
+        self.socket.sendall(command + b"\r\n")
+        recv = []
+        while True:
+            chunck = self.socket.recv(1)
+            recv.append(chunck)
+            if chunck == b'\n':
+                break
+            
+
+        recv = b"".join(recv)
+        if recv != b"OK\r\n":
+            print("!!!, Error in response")
+            raise ConnectionError()
+        time.sleep(0.005)
+
+    def _connectToOgar(self, port, count = 3):
+        c = 0
+        while True:
+            try:
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.connect(('127.0.0.1',2998))
+                return
+            except:
+                self.socket.close()
+                if c >= count:
+                    break
+                else:
+                    c+=1
+                    time.sleep(0.5)
+                    continue
+        raise ConnectionError("Can not connect to node")
+                
+
 
 
     def close(self):
         self._sendCommand("exit")
-        self.ogar.terminate()
+        self.run_ogar.terminate()
 
-        self.cigar.terminate()
+        self.run_cigar.terminate()
 
         self.browser.close()
 

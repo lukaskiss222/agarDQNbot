@@ -5,6 +5,7 @@ import numpy as np
 import EnviromentAgar as EA
 import random
 from DeepQModel import DeepQModel
+from rewards import CombinedRewards
 
 
 
@@ -19,7 +20,8 @@ SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
                         "fillSkin", "backgroundSectors", "jellyPhysics", "playSounds"]}
 
 TOT_FRAME = 3000000
-MIN_OBSERVATION = 5000
+TOT_SCORE = 200
+MIN_OBSERVATION = 50
 NUM_ACTIONS = 9
 NUM_FRAMES = 3
 
@@ -30,16 +32,15 @@ if __name__ == "__main__":
     agent = DeepQModel(NUM_ACTIONS,NUM_FRAMES)
 
     observation_num = 0
+    rewardO = CombinedRewards(TOT_FRAME, TOT_SCORE)
     
 
     while observation_num < TOT_FRAME:
         
+        rewardO.reset()
         first = a.reset()/255
-        input()
         state = np.array([first]*NUM_FRAMES)
         state = np.moveaxis(state,0,NUM_FRAMES - 1)
-        alive_frame = 0
-        total_reward = 0
 
         done = False
         
@@ -60,29 +61,23 @@ if __name__ == "__main__":
                 temp_rewards.append(temp_reward)
 
             
-            if done:
-                reward = -1
-            
-            else:
-                reward = max(temp_rewards)
+            reward = rewardO.calculateReward(max(temp_rewards),done)
 
             next_state = np.array(buffer)
             next_state = np.moveaxis(next_state, 0, NUM_FRAMES - 1)
             agent.remember(state, action, reward, next_state, done)
             state = next_state
-            total_reward = reward
 
             if len(agent.memory) > MIN_OBSERVATION:
                 agent.replay()
 
             if done:
-                print("Lived with maximum time ", alive_frame)
-                print("Earned a total of reward equal to ", total_reward)
+                print("Lived with maximum time ", rewardO.count_calls)
+                print("Earned a total of reward equal to ", rewardO.calculateTotalReward())
                 
         
 
             observation_num+=1
-            alive_frame+=1
 
 
     a.close()

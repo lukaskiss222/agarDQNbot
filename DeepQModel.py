@@ -72,7 +72,7 @@ class DeepQModel(object):
                 t[actions[i]] = rewards[i] + self.gamma*np.max(t[i])
 
 
-        loss = self.model.train_on_bacth(states, t)
+        loss = self.model.train_on_batch(states, t)
         self.epislon_decay()
         
 
