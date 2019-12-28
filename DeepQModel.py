@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import Sequential
-from tensorflow.keras import layers
+from tensorflow.keras import Sequential, Model
+from tensorflow.keras import layers, backend, utils
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
 import numpy as np
@@ -31,7 +31,7 @@ class DeepQModel(object):
         self.gamma = 0.99
 
         self.MEMORY_SIZE = 40000
-        self.MINIBATCH_SIZE = 32
+        self.MINIBATCH_SIZE = 64
 
         #self.memory = deque(maxlen=self.MEMORY_SIZE)
         self.memory = Memory(self.MEMORY_SIZE)
@@ -45,6 +45,7 @@ class DeepQModel(object):
     def construct_q_network(self):
 
         # Uses the network architecture found in DeepMind paper
+        """
         model = Sequential()
         model.add(layers.Convolution2D(32, (8, 8), strides=(4, 4), input_shape=(84, 84, self.num_frames)))
         model.add(layers.Activation('relu'))
@@ -56,48 +57,62 @@ class DeepQModel(object):
         model.add(layers.Dense(512))
         model.add(layers.Activation('relu'))
         model.add(layers.Dense(self.num_actions))
-        #model.compile(loss='mse', optimizer=Adam(lr=self.lr))
+        """
+        input_states = layers.Input(shape=(84,84,self.num_frames))
+        x = layers.Convolution2D(32, (8, 8), strides=(4, 4), input_shape=(84, 84, self.num_frames))(input_states)
+        x = layers.Activation('elu')(x)
+        x = layers.Convolution2D(64, (4, 4), strides=(2, 2))(x)
+        x = layers.Activation('elu')(x)
+        x = layers.Convolution2D(64, (3, 3))(x)
+        x = layers.Activation('elu')(x)
+        x = layers.Flatten()(x)
 
+        h_value = layers.Dense(512, activation='elu', name="h_values")(x)
+        value = layers.Dense(1, activation="linear", name="value")(h_value)
+
+        h_raw_adventage = layers.Dense(512, activation="elu")(x)
+        raw_adventage = layers.Dense(self.num_actions, activation="linear")(h_raw_adventage)
+
+        #adventage = raw_adventage - K.max(raw_adventage, axes=1, keepdims=True)
+        adventage = raw_adventage - layers.Lambda(lambda x: backend.mean(x, axis=1, keepdims=True))(raw_adventage)
+
+        Q_values = value + adventage
+
+        model = Model(inputs=[input_states], outputs=[Q_values])
+
+        #utils.plot_model(model, show_shapes=True)
         return model
 
     def replay(self):
 
         #minibatch = random.sample(self.memory, self.MINIBATCH_SIZE)
         minibatch, idxs, is_weights = self.memory.sample(self.MINIBATCH_SIZE)
+        is_weights =  is_weights.astype(np.float32)
         states = np.array([val[0] for val in minibatch ])
         actions = np.array([val[1] for val in minibatch ])
-        rewards = np.array([val[2] for val in minibatch ])
+        rewards = np.array([val[2] for val in minibatch ], dtype=np.float32)
         next_states = np.array([val[3] for val in minibatch ])
         dones = np.array([val[4] for val in minibatch ])
 
-
-        t = self.target_model.predict(next_states)
-
-        for i in range(len(dones)):
-            if dones[i]:
-                t[i][actions[i]] = rewards[i]
-            else:
-                t[i][actions[i]] = rewards[i] + self.gamma*np.max(t[i])
+        """
+        next_Q_values = self.target_model.predict(next_states)
 
 
-        #loss = self.model.train_on_batch(states, t, sample_weight = is_weight)
-        absolute_error = None
-        loss_value = None
+        target_Q_values = rewards + (1-dones)*self.gamma*np.max(next_Q_values, axis=1)
+        target_Q_values = target_Q_values.astype(np.float32)
+        """
 
-        with tf.GradientTape() as tape:
-            one_hot_actions = tf.one_hot(actions, self.num_actions)
-            logits = self.model(states)
-            Q_log = tf.math.reduce_sum(tf.math.multiply(one_hot_actions, logits),axis=1)
-            Q_t = tf.math.reduce_sum(tf.math.multiply(one_hot_actions, t),axis=1)
-            diff = tf.math.subtract(Q_log,Q_t)
+        #Double DQN
+        next_Q_values = self.model.predict(next_states)
+        best_next_actions = np.argmax(next_Q_values, axis=1)
+        next_mask = tf.one_hot(best_next_actions, self.num_actions).numpy()
+        next_best_Q_values = (self.target_model.predict(next_states)* next_mask).sum(axis=1)
 
-            absolute_error = keras.backend.abs(diff)
-            
+        target_Q_values = rewards + (1-dones)*self.gamma*next_best_Q_values
+        target_Q_values = target_Q_values.astype(np.float32)
 
-            loss_value = tf.math.reduce_mean(is_weights * tf.math.squared_difference(Q_log, Q_t))
-            #loss_value = keras.losses.mse(t,logits)
-            grads = tape.gradient(loss_value, self.model.trainable_weights)
-            self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
+
+        loss_value, absolute_error = self._train(states,actions, target_Q_values, is_weights)
 
         for i, idx in enumerate(idxs):
             self.memory.update(idx,absolute_error[i])
@@ -105,7 +120,30 @@ class DeepQModel(object):
 
 
         self.epislon_decay()
-        return loss_value
+        return loss_value 
+
+    @tf.function
+    def _train(self, states, actions, target_Q_values, is_weights):
+        absolute_error = None
+        loss_value = None
+
+        with tf.GradientTape() as tape:
+            mask = tf.one_hot(actions, self.num_actions)
+            all_Q_values = self.model(states)
+            Q_values = tf.math.reduce_sum(all_Q_values * mask ,axis=1)
+
+            diff = tf.math.subtract(Q_values, target_Q_values)
+            absolute_error = keras.backend.abs(diff)
+            
+
+            loss_value = tf.reduce_mean(is_weights *  tf.square(diff))
+
+            grads = tape.gradient(loss_value, self.model.trainable_weights)
+            self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
+
+        return loss_value, absolute_error
+
+
         
 
 
@@ -134,6 +172,8 @@ class DeepQModel(object):
 
     def load_network(self, path):
             self.model = load_model(path)
+            self.counter_TAU = 0
+            self.target_model()
             print("Succesfully loaded network.")
 
     def target_train(self):
@@ -151,3 +191,10 @@ class DeepQModel(object):
             self.target_model.set_weights(target_model_weights)
             """
 
+if __name__ == "__main__":
+    d = DeepQModel(9,3)
+
+    for i in range(d.MINIBATCH_SIZE + 2):
+        sample = np.zeros((84,84,3), dtype=np.float32), 0, 1.0, np.random.rand(84,84,3), False
+        d.remember(sample)
+    d.replay()

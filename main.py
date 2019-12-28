@@ -27,6 +27,9 @@ TOT_SCORE = 200
 MIN_OBSERVATION = 500
 NUM_ACTIONS = 9
 NUM_FRAMES = 3
+SAVE_FRAMES = 1000
+
+
 
 
 
@@ -39,7 +42,9 @@ if __name__ == "__main__":
 
     
     rewardO = CombinedRewards(TOT_FRAME, TOT_SCORE)
-    logdir = "logs/" + datetime.now().strftime("%Y%m%d-%H%M%S")
+    logdir = "logs/" + datetime.now().strftime("%Y:%m:%d--%H:%M:%S") + "-" + str(agent.MINIBATCH_SIZE)
+    SAVE_NAME = "agent/agent-" + datetime.now().strftime("%Y:%m:%d--%H:%M:%S") + "-" \
+    + str(agent.MINIBATCH_SIZE) 
 
     logger = TensorBoardLogger(logdir)
     
@@ -103,6 +108,9 @@ if __name__ == "__main__":
                 
                 loss_buf = []
                 step+=1
+
+            if observation_num % SAVE_FRAMES == 0:
+                agent.save_network(SAVE_NAME)
                 
         
 
