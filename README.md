@@ -24,5 +24,18 @@ Trying to implement Agar bot with DQN
     * Instead of images, it will get just server info by sockets
     * Maybe applicatble to normal Agar servers
 
+## Install 
+* virtualenv
+* source bin/activate
+* pip install selenium
+* pip install mss
+* pip install tensorflow==1.15
+* pip install opencv-python
+* pip install stable-baselines
+
+Check by running ***python EnviromentAgar.py***
+
+Somethimes node server is left running, so use ***killall node*** to kill server or client
+
 ## Help
 Any help is welcome, this project is a answer to HW for machine learning class. 
