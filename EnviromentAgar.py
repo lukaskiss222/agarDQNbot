@@ -19,20 +19,20 @@ SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
 
 class EnviromentAgar(object):
 
-    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, botsNumber = 0, PORT=2998):
+    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, image_size = (120,120), botsNumber = 0, PORT=2998):
         f = open("Ogar_o.txt","w")
         self.discretized = False
         self.SCREENSHOT_MONITOR = {'top': 250, 'left': 0, 'width': WINDOW_WIDTH*2, 'height': WINDOW_HIGHT*2}
         self.WINDOW_WIDTH = WINDOW_WIDTH
         self.WINDOW_HIGHT = WINDOW_HIGHT
-        
         self.origWD = os.getcwd()
-        
-        os.chdir(os.path.join(os.path.abspath(sys.path[0]), "./OgarII/cli"))
-        self.run_ogar = subprocess.Popen(["node", "index.js"],stdin=subprocess.DEVNULL,
-    stdout=f, encoding='utf8')
-        os.chdir(self.origWD)
+        self.image_size = image_size
+        self.last_img = None
 
+        # We allow to load local settings file instead of ..../cli/settings
+        self.run_ogar = subprocess.Popen(["node", "OgarII/cli/index.js"],stdin=subprocess.DEVNULL,
+    stdout=f, stderr=f, encoding='utf8')
+        
         os.chdir(os.path.join(os.path.abspath(sys.path[0]), "./Cigar2"))
         self.run_cigar = subprocess.Popen(["node", "webserver.js"], stdin=subprocess.DEVNULL,
          stdout=subprocess.DEVNULL)
@@ -46,7 +46,7 @@ class EnviromentAgar(object):
         self.browser.get("http://localhost:3000")
 
         self.grabber = gi.ScreenShot(self.SCREENSHOT_MONITOR)
-        self.images_generator = self.grabber.edited_images(120,120)
+        self.images_generator = self.grabber.edited_images(*self.image_size)
 
         self.canvas = self.browser.find_element_by_id("canvas")
         self.mouseHIGHT = int(self.canvas.get_attribute("height"))
@@ -150,23 +150,27 @@ class EnviromentAgar(object):
 
     def reset(self):
         self._sendCommand("killall 1")
-        self._sendCommand("next_step")
         time.sleep(0.3)
+        self._sendCommand("next_step")
         if self.isDead():
             self.play_btn.click()
         
+        self._sendCommand("next_step")
         time.sleep(0.3)
-        img = next(self.images_generator)
-        return img
+        self.last_img = next(self.images_generator)
+        return self.last_img
 
     def step(self, action):
+        if self.last_img is None:
+            raise EnvironmentError('First call Reset')
         self._setAction(action)
         self._sendCommand("next_step")
         score = self.getScore()
-        image = next(self.images_generator)
         terminal = self.isDead()
         if terminal:
-            return None, score, terminal
+            return self.last_img, score, terminal
+        image = next(self.images_generator)
+        self.last_img = image 
         return image, score, terminal
 
     def _addBot(self, count):
@@ -220,3 +224,5 @@ class EnviromentAgar(object):
 
 if __name__ == "__main__":
     a = EnviromentAgar(580,580)
+    time.sleep(2)
+    a.close()

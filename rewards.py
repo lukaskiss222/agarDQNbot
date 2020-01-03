@@ -26,8 +26,6 @@ class SimpleRewards(AbstractRewards):
         self.last_score = 0
 
     def calculateReward(self, score, done):
-        if done:
-            return -10
         if score > self.max:
             self.max = score
         if self.last_score < score:
@@ -36,6 +34,8 @@ class SimpleRewards(AbstractRewards):
         if self.last_score < score:
             self.last_score = score
             return -5
+        if done:
+            return -10
         return -1
 
     def calculateTotalReward(self):
