@@ -16,7 +16,7 @@ from per.prioritized_memory import Memory
 
 class DeepQModel(object):
     """Constructs the desired deep q learning network"""
-    def __init__(self, num_actions, num_frames, TAU=100, lr=0.0025, intEpsilon = 0.2):
+    def __init__(self, num_actions, num_frames, TAU=100, lr=0.0025, intEpsilon = 0.2, epislon_decay = 1000):
         
         self.num_actions = num_actions
         self.num_frames = num_frames
@@ -24,13 +24,13 @@ class DeepQModel(object):
         self.counter_TAU = 0
         self.lr = lr
 
-        self.EPSILON_DECAY = 100000
+        self.EPSILON_DECAY = epislon_decay
         self.FINAL_EPSILON = 0.05
         self.INITIAL_EPSILON = intEpsilon
         self.epsilon = intEpsilon
         self.gamma = 0.99
 
-        self.MEMORY_SIZE = 40000
+        self.MEMORY_SIZE = 100000
         self.MINIBATCH_SIZE = 64
 
         #self.memory = deque(maxlen=self.MEMORY_SIZE)
@@ -58,7 +58,7 @@ class DeepQModel(object):
         model.add(layers.Activation('relu'))
         model.add(layers.Dense(self.num_actions))
         """
-        input_states = layers.Input(shape=(84,84,self.num_frames))
+        input_states = layers.Input(shape=(120,120,self.num_frames))
         x = layers.Convolution2D(32, (8, 8), strides=(4, 4), input_shape=(84, 84, self.num_frames))(input_states)
         x = layers.Activation('elu')(x)
         x = layers.Convolution2D(64, (4, 4), strides=(2, 2))(x)
@@ -67,10 +67,10 @@ class DeepQModel(object):
         x = layers.Activation('elu')(x)
         x = layers.Flatten()(x)
 
-        h_value = layers.Dense(512, activation='elu', name="h_values")(x)
+        h_value = layers.Dense(100, activation='elu', name="h_values")(x)
         value = layers.Dense(1, activation="linear", name="value")(h_value)
 
-        h_raw_adventage = layers.Dense(512, activation="elu")(x)
+        h_raw_adventage = layers.Dense(100, activation="elu")(x)
         raw_adventage = layers.Dense(self.num_actions, activation="linear")(h_raw_adventage)
 
         #adventage = raw_adventage - K.max(raw_adventage, axes=1, keepdims=True)

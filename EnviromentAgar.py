@@ -46,7 +46,7 @@ class EnviromentAgar(object):
         self.browser.get("http://localhost:3000")
 
         self.grabber = gi.ScreenShot(self.SCREENSHOT_MONITOR)
-        self.images_generator = self.grabber.edited_images(84,84)
+        self.images_generator = self.grabber.edited_images(120,120)
 
         self.canvas = self.browser.find_element_by_id("canvas")
         self.mouseHIGHT = int(self.canvas.get_attribute("height"))
@@ -150,9 +150,11 @@ class EnviromentAgar(object):
 
     def reset(self):
         self._sendCommand("killall 1")
+        self._sendCommand("next_step")
+        time.sleep(0.3)
         if self.isDead():
             self.play_btn.click()
-        self._sendCommand("next_step")
+        
         time.sleep(0.3)
         img = next(self.images_generator)
         return img

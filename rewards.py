@@ -23,19 +23,27 @@ class SimpleRewards(AbstractRewards):
     def __init__(self, MAX_FRAMES, MAX_SCORE):
         super().__init__(MAX_FRAMES, MAX_SCORE)
         self.max = 0
+        self.last_score = 0
 
     def calculateReward(self, score, done):
         if done:
-            return -1
+            return -10
         if score > self.max:
             self.max = score
-        return score
+        if self.last_score < score:
+            self.last_score = score
+            return 10
+        if self.last_score < score:
+            self.last_score = score
+            return -5
+        return -1
 
     def calculateTotalReward(self):
         return self.max
 
-    def reset(self):
+    def reset(self, init_score):
         self.max = 0
+        self.last_score = init_score
 
 
 

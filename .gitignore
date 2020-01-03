@@ -1,6 +1,8 @@
 #ignore My files
 Ogar_o.txt
 logs/
+agent*
+notes.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

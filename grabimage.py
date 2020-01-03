@@ -39,7 +39,7 @@ class ScreenShot(object):
         for shot in self.images():
             image = cv2.cvtColor(shot, cv2.COLOR_RGB2GRAY)
 
-            yield cv2.resize(image,(height,width))
+            yield cv2.resize(image,(height,width)).astype(np.float32) 
 
 
     def show(image):
