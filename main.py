@@ -20,6 +20,7 @@ def main():
     model = DQN(CnnPolicy, env, verbose = 1, 
             target_network_update_freq=500,
             prioritized_replay=True,
+            learning_rate=0.001,
             tensorboard_log='logs/')
 
     model.learn(total_timesteps=STEPS, tb_log_name=logname)
