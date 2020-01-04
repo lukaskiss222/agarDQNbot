@@ -19,7 +19,7 @@ Trying to implement Agar bot with DQN
   - [ ] There are a lot of them probably
 
 - [ ] Future development
-  - [ ] Moving enviroment to stable-baselines? (Maybe My DQN agent is not working) 
+  - [x] Moving enviroment to stable-baselines? (Maybe My DQN agent is not working) 
   - [ ] Create own client based on Ws socket
     * Instead of images, it will get just server info by sockets
     * Maybe applicatble to normal Agar servers
