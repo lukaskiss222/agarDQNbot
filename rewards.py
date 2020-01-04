@@ -28,15 +28,37 @@ class SimpleRewards(AbstractRewards):
     def calculateReward(self, score, done):
         if score > self.max:
             self.max = score
+        """
         if self.last_score < score:
             self.last_score = score
-            return 10
-        if self.last_score < score:
+            return 1 
+        if self.last_score > score:
             self.last_score = score
-            return -5
+            return -1 # Scored lowered, something bad happend
+        
         if done:
-            return -10
-        return -1
+            if self.last_score >= self.MAX_SCORE:
+                return 2 # we reached our goal :D
+            return -2 # We failed to achieve the end MAX_SCORE
+	"""
+        if done:
+            temp = (self.MAX_SCORE - self.last_score)#/self.MAX_SCORE + 1
+            temp = temp*2
+            if temp > 0:
+                return min(50, temp)
+            elif temp < 0:
+                return max(-50, temp)
+            else:
+                return 0
+        
+        temp =  abs(self.last_score - score) #* (1- self.last_score/score)
+        self.last_score = score
+        if temp > 0:
+            return min(20, temp)
+        elif temp < 0:
+            return max(-20, temp) 
+        else:
+            return -2 # We didn't improve
 
     def calculateTotalReward(self):
         return self.max
