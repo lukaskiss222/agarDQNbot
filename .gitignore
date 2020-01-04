@@ -3,6 +3,9 @@ Ogar_o.txt
 logs/
 agent*
 notes.txt
+bin/
+include/
+lib/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
