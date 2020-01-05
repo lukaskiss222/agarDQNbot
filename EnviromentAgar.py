@@ -107,6 +107,8 @@ class EnviromentAgar(object):
         x,y = self.actionToMouse(action)
         self.browser.execute_script("arguments[0].value = '{}';".format(x), self.mouseX)
         self.browser.execute_script("arguments[0].value = '{}';".format(y), self.mouseY)
+        time.sleep(0.02) # Need to be optimzed
+        #But we need it, bcasue it takes time to set the attributes
 
     def setMoveType(self,mouse):
         if mouse:
@@ -170,6 +172,9 @@ class EnviromentAgar(object):
             raise EnvironmentError('First call Reset')
         self._setAction(action)
         self._sendCommand("next_step")
+        time.sleep(0.04) # We need to wait, until the score changes
+        # In the window
+        # Need to be optimze
         score = self.getScore()
         terminal = self.isDead()
         if terminal:

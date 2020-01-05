@@ -47,7 +47,7 @@ class AgarEnv(gym.Env):
                 True)
         if self.lived >= self.max_steps_life:
             return self.buffer, done_reward, True, info
-        if self.last_reward >= self.max_score:
+        if self.critic.max >= self.max_score:
             return self.buffer, done_reward, True, info
 
         self.buffer = [] # reset buffer for images
