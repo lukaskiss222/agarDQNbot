@@ -10,7 +10,7 @@ from agarEnv import AgarEnv
 WINDOW_SIZE = (580,580)
 IMAGE_SIZE = (120,120)
 NUM_FRAMES = 3
-EPISODES = 100
+EPISODES = 250
 MAX_STEPS_LIFE = 200
 STEPS = EPISODES*MAX_STEPS_LIFE
 logname = 'DQN-' + datetime.now().strftime("%Y:%m:%d--%H:%M:%S") + '-steps:{}'.format(STEPS)

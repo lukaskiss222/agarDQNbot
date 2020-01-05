@@ -42,13 +42,13 @@ class AgarEnv(gym.Env):
         self.lived+=1
         done = False
         temp_scores = []
-
-        #checking ending normal criteria
-
+        
+        done_reward = self.critic.calculateReward(self.envAgar.getScore(),
+                True)
         if self.lived >= self.max_steps_life:
-            return self.buffer, self.last_reward, True, info
+            return self.buffer, done_reward, True, info
         if self.last_reward >= self.max_score:
-            return self.buffer, self.last_reward, True, info
+            return self.buffer, done_reward, True, info
 
         self.buffer = [] # reset buffer for images
         for i in range(self.num_frames):

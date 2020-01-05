@@ -5,6 +5,8 @@ bin/
 lib/
 include/
 geckodriver.log
+models/
+!models/DQN-2020:01:04--23:08:41-steps:50000.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

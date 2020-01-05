@@ -150,10 +150,15 @@ class EnviromentAgar(object):
 
     def reset(self):
         self._sendCommand("killall 1")
-        time.sleep(0.3)
         self._sendCommand("next_step")
-        if self.isDead():
-            self.play_btn.click()
+        
+        c = 0
+        while not self.isDead():
+            time.sleep(0.01)
+            c+=1
+            if c > 200:
+                raise ValueError('Reset not working!!!!!!')
+        self.play_btn.click()
         
         self._sendCommand("next_step")
         time.sleep(0.3)
