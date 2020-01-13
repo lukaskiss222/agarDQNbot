@@ -1,0 +1,9 @@
+name: agarBot
+dependencies:
+    - python=3.7
+    - pip:
+        - tensorflow==1.15
+        - stable-baselines
+        - mss
+        - selenium
+        - gym

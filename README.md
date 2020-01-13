@@ -58,24 +58,33 @@ The selenium module requires [*geckodriver*](https://github.com/mozilla/geckodri
 Download it from *https://github.com/mozilla/geckodriver/releases* and untar it and copy it to */usr/bin/*.
 
 
+
 Install our python enviroment:
 ```bash
 conda env create -f configure.yml
 conda activate agarBot
 ```
+Also we need to install necessery NPM **packages** to our client and server.
+```bash
+cd OgarII/
+npm install
+cd ../Cigar2/
+npm install
+cd ..
+```
+Check with this command, if everuthing is insstalled properly:
+```bash
+python EnviromentAgar.py
+```
 
-
-* virtualenv
-* source bin/activate
-* pip install selenium
-* pip install mss
-* pip install tensorflow==1.15
-* pip install opencv-python
-* pip install stable-baselines
-
-Check by running ***python EnviromentAgar.py***
 
 Somethimes node server is left running, so use ***killall node*** to kill server or client
+
+## Training
+Run 
+```bash
+python main.py
+```
 
 ### Detail enviroment description
 - At the initialization of our gym enviroment, the *Client webserver* and *agar webserver* are started by subprocess and are left running until you close the gym enviroment. It is not recommended to multiple instances of our gym enviroment. (They will overlap. Moreover, you can not run mutiple servers on the same port.)
