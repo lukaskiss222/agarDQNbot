@@ -9,7 +9,7 @@ class ScreenShot(object):
 
     """Docstring for ScreenShot. """
 
-    def __init__(self, monitor = {'top': 0, 'left': 0, 'width': 800, 'height': 600}, fps = 30):
+    def __init__(self, monitor = {'top': 0, 'left': 0, 'width': 800, 'height': 600}, fps = 30, display=None):
         """TODO: to be defined1.
 
         :monitor: TODO
@@ -18,7 +18,10 @@ class ScreenShot(object):
         """
         self._monitor = monitor
         self._spf = (1/fps)
-        self._sct = mss.mss()
+        if display is not None:
+            self._sct = mss.mss(display=display)
+        else:
+            self._sct = mss.mss()
 
     
     def images(self):

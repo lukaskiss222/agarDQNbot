@@ -7,12 +7,17 @@ import copy
 
 class AgarEnv(gym.Env):
 
+
     metadata = {'render.modes': ['human']}
 
     def __init__(self, windows_size, image_size, 
             num_frames, max_steps_life = 200,
-            max_score = 50):
+            max_score = 50, visible = 0):
         super(AgarEnv, self).__init__()
+
+        self.stand = 0
+        self.render_images = []
+
         self.image_size = image_size
         self.windows_size = windows_size
         self.num_frames = num_frames
@@ -29,13 +34,21 @@ class AgarEnv(gym.Env):
                 shape=(image_size[0], image_size[1], num_frames),
                 dtype=np.uint8)
         self.action_space = spaces.Discrete(9)
-        self.envAgar = EnviromentAgar(*windows_size)
+        self.envAgar = EnviromentAgar(*windows_size, visible=visible)
         
     
         #We create our rewrds calculator
         self.critic = SimpleRewards(self.max_steps_life, self.max_score)
 
     def step(self, action):
+        if action == 4:
+            self.stand+=1
+        else:
+            self.stand = 0
+
+        if self.stand == 40:
+            print("To long standing!!!!!!!!!")
+
         info = {}
         if self.buffer is None:
             raise EnvironmentError('First run reset function')
@@ -51,6 +64,7 @@ class AgarEnv(gym.Env):
             return self.buffer, done_reward, True, info
 
         self.buffer = [] # reset buffer for images
+        self.render_images = []
         for i in range(self.num_frames):
             st, score, temp_done = self.envAgar.step(action)
             if score >= self.max_score:

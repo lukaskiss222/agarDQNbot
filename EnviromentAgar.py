@@ -9,6 +9,7 @@ import os
 import socket
 import cv2
 
+from pyvirtualdisplay import Display
 
 TOP_BAR = 74
 SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
@@ -19,15 +20,21 @@ SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
 
 class EnviromentAgar(object):
 
-    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, image_size = (120,120), botsNumber = 0, PORT=2998):
+    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, image_size = (120,120), botsNumber = 0, PORT=2998, visible = 0):
         f = open("Ogar_o.txt","w")
         self.discretized = False
-        self.SCREENSHOT_MONITOR = {'top': 250, 'left': 0, 'width': WINDOW_WIDTH*2, 'height': WINDOW_HIGHT*2}
+        self.SCREENSHOT_MONITOR = {'top': TOP_BAR, 'left': 0, 'width': WINDOW_WIDTH, 'height': WINDOW_HIGHT}
         self.WINDOW_WIDTH = WINDOW_WIDTH
         self.WINDOW_HIGHT = WINDOW_HIGHT
         self.origWD = os.getcwd()
         self.image_size = image_size
         self.last_img = None
+
+        #We have to set visible to 0, becuase screensaver will produce black states images 
+        self.display = Display(visible=visible, size=(self.WINDOW_WIDTH + 200,
+            self.WINDOW_HIGHT + 200))
+
+        self.display.start()
 
         # We allow to load local settings file instead of ..../cli/settings
         self.run_ogar = subprocess.Popen(["node", "OgarII/cli/index.js"],stdin=subprocess.DEVNULL,
@@ -45,7 +52,8 @@ class EnviromentAgar(object):
         self.browser.set_window_position(0, 0)
         self.browser.get("http://localhost:3000")
 
-        self.grabber = gi.ScreenShot(self.SCREENSHOT_MONITOR)
+        print(self.display.cmd)
+        self.grabber = gi.ScreenShot(self.SCREENSHOT_MONITOR, display=self.display.cmd[-1])
         self.images_generator = self.grabber.edited_images(*self.image_size)
 
         self.canvas = self.browser.find_element_by_id("canvas")
@@ -158,7 +166,7 @@ class EnviromentAgar(object):
         while not self.isDead():
             time.sleep(0.01)
             c+=1
-            if c > 200:
+            if c > 400:
                 raise ValueError('Reset not working!!!!!!')
         self.play_btn.click()
         
@@ -180,6 +188,8 @@ class EnviromentAgar(object):
         if terminal:
             return self.last_img, score, terminal
         image = next(self.images_generator)
+        if image.mean() == 0:
+            raise ValueError("Black image, maybe virual screen is black!!!!")
         self.last_img = image 
         return image, score, terminal
 
@@ -231,8 +241,9 @@ class EnviromentAgar(object):
         self.run_cigar.terminate()
 
         self.browser.close()
+        self.display.popen.terminate()
 
 if __name__ == "__main__":
-    a = EnviromentAgar(580,580)
+    a = EnviromentAgar(580, 580)
     time.sleep(2)
     a.close()

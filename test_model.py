@@ -16,7 +16,7 @@ env = None
 
 def main(name):
     env = AgarEnv(WINDOW_SIZE, IMAGE_SIZE, NUM_FRAMES,
-            max_score=150)
+            max_score=150, visible = 1)
 
     model = DQN.load(name)
 
