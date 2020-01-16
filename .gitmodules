@@ -1,0 +1,6 @@
+[submodule "OgarII"]
+	path = OgarII
+	url = https://github.com/lukaskiss222/OgarII
+[submodule "Cigar2"]
+	path = Cigar2
+	url = https://github.com/lukaskiss222/Cigar2
