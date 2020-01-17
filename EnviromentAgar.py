@@ -20,7 +20,7 @@ SETTINGS_NAME = {"set": ["showSkins", "darkTheme", "showGrid" ,"showBorder"],
 
 class EnviromentAgar(object):
 
-    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, image_size = (120,120), botsNumber = 0, PORT=2998, visible = 0):
+    def __init__(self, WINDOW_WIDTH, WINDOW_HIGHT, image_size = (120,120), botsNumber = 0, PORT=2998):
         f = open("Ogar_o.txt","w")
         self.discretized = False
         self.SCREENSHOT_MONITOR = {'top': TOP_BAR, 'left': 0, 'width': WINDOW_WIDTH, 'height': WINDOW_HIGHT}
@@ -31,7 +31,7 @@ class EnviromentAgar(object):
         self.last_img = None
 
         #We have to set visible to 0, becuase screensaver will produce black states images 
-        self.display = Display(visible=visible, size=(self.WINDOW_WIDTH + 200,
+        self.display = Display(visible=0, size=(self.WINDOW_WIDTH + 200,
             self.WINDOW_HIGHT + 200))
 
         self.display.start()

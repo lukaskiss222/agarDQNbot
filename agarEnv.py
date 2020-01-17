@@ -12,7 +12,7 @@ class AgarEnv(gym.Env):
 
     def __init__(self, windows_size, image_size, 
             num_frames, max_steps_life = 200,
-            max_score = 50, visible = 0):
+            max_score = 50):
         super(AgarEnv, self).__init__()
 
         self.stand = 0
@@ -34,7 +34,7 @@ class AgarEnv(gym.Env):
                 shape=(image_size[0], image_size[1], num_frames),
                 dtype=np.uint8)
         self.action_space = spaces.Discrete(9)
-        self.envAgar = EnviromentAgar(*windows_size, visible=visible)
+        self.envAgar = EnviromentAgar(*windows_size)
         
     
         #We create our rewrds calculator
