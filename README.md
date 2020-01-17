@@ -67,7 +67,7 @@ Then on your localhost computer just run:
 vncviewer  :0
 ```
 and the window of the game should appear.
-####Testing model
+#### Testing model
 If you want to test your model run:
 ```bash
 python test_model.py <model>.zip &
