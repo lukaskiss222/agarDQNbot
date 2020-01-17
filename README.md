@@ -39,8 +39,43 @@ They are multiple options you can play with as:
 
 ## Installation
 
+### Docker Instalation (recomanded)
+Download and first run
+```bash
+docker pull scriptus/agarbot:1
+docker run -p 5900:5900 -it agarbot  /bin/bash
+```
+Activate enviroment and run the training file.
+```bash
+conda activate agarBot
+python main.py
+```
+To open the same container docker run:
+```
+docker start -a -i <id of your container>
+```
 
-### Install Node and NPM
+#### How to see the training 
+If you want to see the enviroment then run training in the background by:
+```bash
+python main.py &
+./connect_to_training.sh :1001
+```
+The last command will open xvfb to vnc port 5900 of your docker.
+Then on your localhost computer just run:
+```bash
+vncviewer  :0
+```
+and the window of the game should appear.
+####Testing model
+If you want to test your model run:
+```bash
+python test_model.py <model>.zip &
+./connext_to_training.sh :1001
+```
+to start the vnc server and then your vncviewer to connext to the docker display
+### Locahost instalation
+#### Install Node and NPM
 - Dependencies 
 ```bash
 sudo apt-get install curl
