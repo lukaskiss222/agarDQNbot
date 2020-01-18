@@ -115,8 +115,17 @@ class EnviromentAgar(object):
         x,y = self.actionToMouse(action)
         self.browser.execute_script("arguments[0].value = '{}';".format(x), self.mouseX)
         self.browser.execute_script("arguments[0].value = '{}';".format(y), self.mouseY)
-        time.sleep(0.02) # Need to be optimzed
-        #But we need it, bcasue it takes time to set the attributes
+        c = 0
+        while True:
+            x_t = int(self.mouseX.get_attribute("value"))
+            y_t = int(self.mouseY.get_attribute("value"))
+            if (x_t == x) and (y_t == y):
+                break
+            time.sleep(0.02) 
+            if c > 200:
+                raise ValueError("X and Y can not be set!!!!!!!!")
+            c+=1
+
 
     def setMoveType(self,mouse):
         if mouse:

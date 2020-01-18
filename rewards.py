@@ -46,10 +46,8 @@ class SimpleRewards(AbstractRewards):
             temp = temp*2
             if temp > 0:
                 return min(50, temp)
-            elif temp < 0:
-                return max(-50, temp)
             else:
-                return 0
+                return -2
         
         temp =  abs(self.last_score - score) #* (1- self.last_score/score)
         self.last_score = score
