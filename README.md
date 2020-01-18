@@ -38,8 +38,8 @@ They are multiple options you can play with as:
 Download the git files and submodules
 ```bash
 git clone https://github.com/lukaskiss222/agarDQNbot
-cd agarDQBbot
-git submodule update --recursive
+cd agarDQBbot/
+git submodule update --init --recursive
 ```
 Install docker
 ```bash
