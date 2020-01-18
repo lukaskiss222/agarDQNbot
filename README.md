@@ -43,7 +43,7 @@ They are multiple options you can play with as:
 Download and first run
 ```bash
 docker pull scriptus/agarbot:1
-docker run -p 5900:5900 -it agarbot  /bin/bash
+docker run -p 5900:5900 -it scriptus/agarbot:1  /bin/bash
 ```
 Activate enviroment and run the training file.
 ```bash
