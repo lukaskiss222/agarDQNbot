@@ -42,10 +42,9 @@ class SimpleRewards(AbstractRewards):
             return -2 # We failed to achieve the end MAX_SCORE
 	"""
         if done:
-            temp = (score - self.MAX_SCORE)#/self.MAX_SCORE + 1
-            temp = temp*2
+            temp = (score - self.MAX_SCORE)
             if temp > 0:
-                return min(50, temp)
+                return 50
             else:
                 return -2
         

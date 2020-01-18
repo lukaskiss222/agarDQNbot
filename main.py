@@ -10,7 +10,7 @@ from agarEnv import AgarEnv
 WINDOW_SIZE = (580,580)
 IMAGE_SIZE = (120,120)
 NUM_FRAMES = 3
-EPISODES = 170
+EPISODES = 500
 MAX_STEPS_LIFE = 200
 STEPS = EPISODES*MAX_STEPS_LIFE
 logname = 'DQN-' + datetime.now().strftime("%Y:%m:%d--%H:%M:%S") + '-steps:{}'.format(STEPS)
@@ -26,10 +26,10 @@ def main():
             batch_size=64,
             #buffer_size=100000, #I run our of memory with 16GB RAM :D
             buffer_size=25000,
-            param_noise=True,
-            exploration_fraction=0.25, 
-            exploration_final_eps=0.1,
-            learning_starts=1000,
+            param_noise=False,
+            exploration_fraction=0.20, 
+            exploration_final_eps=0.05,
+            learning_starts=5000,
             tensorboard_log='logs/')
 
     model.learn(total_timesteps=STEPS, tb_log_name=logname)
