@@ -1,19 +1,13 @@
-FROM node:10
+FROM nikolaik/python-nodejs:python3.7-nodejs10
 
 RUN apt-get update && yes|apt-get upgrade
 
-RUN apt-get install vim sudo cmake libopenmpi-dev python3-dev zlib1g-dev -y
-RUN apt-get update && apt-get install -y \
+RUN apt-get install vim sudo cmake libopenmpi-dev python3-dev zlib1g-dev -y \
     software-properties-common \
     unzip \
     curl \
-    xvfb
-
-RUN add-apt-repository "deb http://deb.debian.org/debian buster main" && apt-get update
-RUN apt-get install -y x11-utils x11vnc
-
-
-
+    xvfb \
+    x11-utils x11vnc
 
 
 # Install the latest version of Firefox:
@@ -37,7 +31,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 
 
-
+#Install neceserry packages for node
+RUN npm install --global express uws@10.148.1
 
 
 # Install the latest version of Geckodriver:
@@ -49,28 +44,14 @@ RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
     tar -xz -C /usr/local/bin
 
 
-RUN adduser --disabled-password --gecos '' ubuntu
-RUN adduser ubuntu sudo
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN pip install tensorflow==1.15 stable-baselines mss selenium gym pyvirtualdisplay
+
+RUN adduser --disabled-password --gecos '' ubuntu && \
+    adduser ubuntu sudo \
+    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
 USER ubuntu
 WORKDIR /home/ubuntu/
-RUN chmod a+rwx /home/ubuntu/
+RUN chmod a+rwx /home/ubuntu/ && npm link uws express
 
-
-RUN wget --progress=bar:force:noscroll https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh
-RUN bash Miniconda3-4.7.12.1-Linux-x86_64.sh -b && \
-    echo "export PATH="/home/ubuntu/miniconda3/bin:$PATH"" >> ~/.bashrc && \
-    /bin/bash -c "source ~/.bashrc"
-RUN rm Miniconda3-4.7.12.1-Linux-x86_64.sh 
-
-RUN git clone https://github.com/lukaskiss222/agarDQNbot 
-WORKDIR /home/ubuntu/agarDQNbot
-RUN git submodule update --init --recursive 
-
-RUN npm install express && cd OgarII/ && npm install uws 
-
-ENV PATH /home/ubuntu/miniconda3/bin:$PATH
-RUN conda init bash
-RUN conda env update -f configure.yml
 
 
