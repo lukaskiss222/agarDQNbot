@@ -19,11 +19,6 @@ We use [selenium](https://selenium-python.readthedocs.io/) to run webrowser and 
 Both server and client are coded in javascript, which is necessery to install.
 
 At each step (also includes the reset step) multiple screeshots are taken of the opened selenium webrowser and return as the enviroment state.
-**Important!!!** - do not overlap the selenium opend webrowser with any other application otherwise, it will take screenshot of that applciation, which you don't want. Moreover, before running the project, check if the return state, corresponds to screensize of the webrowser (Some noise can be omitted or included, bcause I set it up correctly for my pc, but it doesn't have to be right for your screen). - To check it us this code:
-```python
-from PIL import Image
-Image.fromarray(state[:,:,0]).show() # This should show the screenshot
-```
 
 Deatiled enviroment description can be find below.
 
@@ -40,19 +35,19 @@ They are multiple options you can play with as:
 ## Installation
 
 ### Docker Instalation (recomanded)
-Download and first run
+Download the git files and submodules
 ```bash
-docker pull scriptus/agarbot:1
-docker run -p 5900:5900 -it scriptus/agarbot:1  /bin/bash
+git clone https://github.com/lukaskiss222/agarDQNbot
+cd agarDQBbot
+git submodule update --recursive
 ```
-Activate enviroment and run the training file.
+Install docker
 ```bash
-conda activate agarBot
-python main.py
+docker pull scriptus/agarbot:latest
 ```
-To open the same container docker run:
+Run the docker with bash 
 ```
-docker start -a -i <id of your container>
+docker run --rm -it -p 5900:5900 -p 6006:6006 -v $PWD:/home/ubuntu/agarDQNbot scriptus/agarbot /bin/bash 
 ```
 
 #### How to see the training 
@@ -66,14 +61,14 @@ Then on your localhost computer just run:
 ```bash
 vncviewer  :0
 ```
-and the window of the game should appear.
+and the window with the game should appear.
 #### Testing model
 If you want to test your model run:
 ```bash
-python test_model.py <model>.zip &
+python test_model.py models/<model>.zip &
 ./connext_to_training.sh :1001
 ```
-to start the vnc server and then your vncviewer to connext to the docker display
+as before run in yout local host vncviewer
 ### Locahost instalation
 #### Install Node and NPM
 - Dependencies 
@@ -132,20 +127,6 @@ Any help is welcome, this project is a answer to HW for machine learning class.
 
 ## To do (Coming soon, hopefully :D)
 
-- [ ] Write down Readme
-  - [ ] Motivation
-  - [ ] Idea of project
-    - [ ] how it works
-    - [ ] Necessery changes to OgarII and Cigar
-    - [ ] much more
-  - [ ] Instalation
-    - [ ] Prerequisites
-    - [ ] Install using pip
-  - [ ] How to run project
-  - [ ] Future of the project
-- [ ] Examples of running project 
-- [ ] Necessery bug fixes
-  - [ ] There are a lot of them probably
 
 - [ ] Future development
   - [x] Moving enviroment to stable-baselines? (Maybe My DQN agent is not working) 
