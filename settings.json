@@ -36,7 +36,7 @@
     "minionEnableERTPControls": false,
     "minionEnableQBasedControl": true,
     "pelletMinSize": 15,
-    "pelletMaxSize": 20,
+    "pelletMaxSize": 18,
     "pelletGrowTicks": 1500,
     "pelletCount": 500,
     "virusMinCount": 0,

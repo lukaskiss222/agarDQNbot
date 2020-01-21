@@ -46,12 +46,7 @@ RUN BASE_URL=https://github.com/mozilla/geckodriver/releases/download \
 
 RUN pip install tensorflow==1.15 stable-baselines mss selenium gym pyvirtualdisplay
 
-RUN adduser --disabled-password --gecos '' ubuntu && \
-    adduser ubuntu sudo \
-    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers 
-USER ubuntu
-WORKDIR /home/ubuntu/
-RUN chmod a+rwx /home/ubuntu/ && npm link uws express
-
+RUN mkdir /home/agarDQNbot
+WORKDIR /home/agarDQNbot
 
 

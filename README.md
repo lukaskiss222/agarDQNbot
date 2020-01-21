@@ -47,7 +47,7 @@ docker pull scriptus/agarbot:latest
 ```
 Run the docker with bash 
 ```
-docker run --rm -it -p 5900:5900 -p 6006:6006 -v $PWD:/home/ubuntu/agarDQNbot scriptus/agarbot /bin/bash 
+docker run --rm -it -p 5900:5900 -p 6006:6006 -v $PWD:/home/agarDQNbot scriptus/agarbot /bin/bash 
 ```
 
 #### How to see the training 
