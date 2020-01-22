@@ -34,7 +34,8 @@ class AgarEnv(gym.Env):
                 shape=(image_size[0], image_size[1], num_frames),
                 dtype=np.uint8)
         self.action_space = spaces.Discrete(9)
-        self.envAgar = EnviromentAgar(*windows_size)
+        self.envAgar = EnviromentAgar(*windows_size, 
+                image_size = image_size)
         
     
         #We create our rewrds calculator
