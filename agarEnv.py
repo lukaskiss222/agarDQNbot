@@ -84,7 +84,7 @@ class AgarEnv(gym.Env):
 
     def reset(self):
         st = self.envAgar.reset()
-        self.buffer = [st]*3
+        self.buffer = [st]*self.num_frames
         self._stackImages()
         self.last_reward = self.envAgar.getScore()
         self.lived = 0
@@ -102,7 +102,7 @@ class AgarEnv(gym.Env):
 
     def _stackImages(self):
         self.buffer = np.array(self.buffer)
-        self.buffer = np.moveaxis(self.buffer, 0, self.num_frames -1)
+        self.buffer = np.moveaxis(self.buffer, 0,2)
 
 if __name__ == "__main__":
     env = AgarEnv()
